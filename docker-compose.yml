@@ -1,0 +1,123 @@
+# Chlat-Park — local development stack.
+#
+#   docker compose up -d db      # just the database
+#   docker compose run --rm migrate
+#   docker compose up -d          # the whole stack
+#
+# The database is published on localhost only. It is never exposed on the
+# public internet, and no other port is published at all.
+
+name: chlat-park-dev
+
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chlat
+      POSTGRES_PASSWORD: chlat
+      POSTGRES_DB: chlat_park
+      # Deterministic collation, so index ordering does not depend on the host.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      # Bound to the loopback interface: the database is not reachable from
+      # outside this machine.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      # Postgres 18 moved PGDATA into a major-version-specific subdirectory and
+      # refuses to start if a volume is mounted at the legacy
+      # /var/lib/postgresql/data path — it exits with "unused mount/volume".
+      # Mounting at /var/lib/postgresql is the supported layout for 18+.
+      - chlat-park-db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chlat -d chlat_park"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks:
+      - chlat-park
+
+  migrate:
+    # A one-shot service that applies the migrations and seeds the database.
+    # It runs after `db` is healthy and exits with code 0.
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: >
+      sh -c "npx prisma migrate deploy && npx prisma db seed"
+    environment:
+      DATABASE_URL: postgresql://chlat:chlat@db:5432/chlat_park?schema=public
+      DIRECT_DATABASE_URL: postgresql://chlat:chlat@db:5432/chlat_park?schema=public
+      NODE_ENV: development
+      # The seed script needs the auth secrets; the local values are fine.
+      JWT_ACCESS_SECRET: local-development-access-secret-not-a-real-secret
+      JWT_REFRESH_SECRET: local-development-refresh-secret-not-a-real-secret
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 7d
+      PLATE_PEPPER: local-development-plate-pepper-not-a-real-secret
+      ENCRYPTION_KEY: local-development-encryption-key-not-a-real-secret
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - chlat-park
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      API_PORT: 3001
+      API_URL: http://localhost:3001
+      DATABASE_URL: postgresql://chlat:chlat@db:5432/chlat_park?schema=public
+      DIRECT_DATABASE_URL: postgresql://chlat:chlat@db:5432/chlat_park?schema=public
+      JWT_ACCESS_SECRET: local-development-access-secret-not-a-real-secret
+      JWT_REFRESH_SECRET: local-development-refresh-secret-not-a-real-secret
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 7d
+      PLATE_PEPPER: local-development-plate-pepper-not-a-real-secret
+      ENCRYPTION_KEY: local-development-encryption-key-not-a-real-secret
+      CORS_ORIGINS: http://localhost:3000
+      RATE_LIMIT_TTL_MS: 60000
+      RATE_LIMIT_LIMIT: 120
+      RATE_LIMIT_LOGIN_TTL_MS: 900000
+      RATE_LIMIT_LOGIN_LIMIT: 10
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3001:3001"
+    networks:
+      - chlat-park
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      API_INTERNAL_URL: http://api:3001
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - chlat-park
+
+volumes:
+  chlat-park-db:
+    name: chlat-park-dev-db
+
+networks:
+  chlat-park:
+    name: chlat-park-dev
+    driver: bridge

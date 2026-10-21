@@ -1,0 +1,43 @@
+{
+  "name": "@chlat/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Chlat-Park Web — the Next.js application",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "node scripts/guards.mjs build",
+    "dev": "next dev --port 3000",
+    "start": "next start --port 3000",
+    "lint": "eslint .",
+    "typecheck": "node scripts/guards.mjs typecheck",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "clean": "rm -rf .next"
+  },
+  "dependencies": {
+    "@chlat/api-client": "workspace:*",
+    "@chlat/contracts": "workspace:*",
+    "@chlat/ui": "workspace:*",
+    "next": "catalog:",
+    "next-intl": "catalog:",
+    "qrcode": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@chlat/config": "workspace:*",
+    "@playwright/test": "catalog:",
+    "@tailwindcss/postcss": "catalog:",
+    "@types/node": "catalog:",
+    "@types/qrcode": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:",
+    "html5-qrcode": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "app": {
+    "name": "Chlat-Park",
+    "tagline": "E-Ticket Parking",
+    "description": "Manual, guard-assisted motorcycle parking entry and exit — a paper ticket replaced by a QR-linked e-ticket."
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong.",
+    "retry": "Try again",
+    "back": "Back",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "close": "Close",
+    "language": "Language",
+    "english": "English",
+    "khmer": "ភាសាខ្មែរ",
+    "notFound": "Page not found.",
+    "notFoundDescription": "The page you are looking for does not exist or has moved.",
+    "comingSoon": "Coming soon",
+    "comingSoonDescription": "This surface is part of the platform build-out. It is not implemented yet.",
+    "signIn": "Sign in",
+    "signOut": "Sign out"
+  },
+  "nav": {
+    "home": "Home",
+    "ticket": "Claim a ticket",
+    "guard": "Guard dashboard",
+    "owner": "Owner dashboard",
+    "admin": "Admin dashboard",
+    "skipToContent": "Skip to content"
+  },
+  "home": {
+    "title": "Parking, without the paper ticket",
+    "subtitle": "Scan the entry QR, get an e-ticket, and the guard verifies it at the exit.",
+    "centralRule": "A QR identifies a claim or a ticket. The trusted system decides whether it is valid — never the QR itself.",
+    "guestCta": "I am parking — claim my ticket",
+    "guardCta": "I am the guard — open the dashboard",
+    "ownerCta": "I own a parking site",
+    "adminCta": "Platform administration",
+    "howItWorks": {
+      "title": "How it works",
+      "step1": {
+        "title": "Entry",
+        "body": "The guard records the plate and issues an entry QR. The paper ticket is gone."
+      },
+      "step2": {
+        "title": "Claim",
+        "body": "The guest scans the QR and receives an e-ticket bound to the plate and the session."
+      },
+      "step3": {
+        "title": "Exit",
+        "body": "The guard scans the e-ticket. The system confirms the payment and the release."
+      }
+    }
+  },
+  "guard": {
+    "entry": {
+      "title": "Guard dashboard",
+      "subtitle": "Record an entry, issue the QR, and verify the exit.",
+      "site": "Site",
+      "selectSite": "Select a site",
+      "plate": "Plate",
+      "platePlaceholder": "e.g. 1AB-234",
+      "issueQr": "Issue entry QR",
+      "verifyTicket": "Verify a ticket"
+    },
+    "login": {
+      "title": "Guard sign in",
+      "subtitle": "Sign in with the account the site manager created for you.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "invalid": "Invalid email or password.",
+      "suspended": "This account is suspended. Contact your site manager."
+    },
+    "site": {
+      "title": "Site",
+      "activeSessions": "Active sessions",
+      "pendingClaims": "Pending claims",
+      "today": "Today",
+      "noSessions": "No active sessions."
+    }
+  },
+  "ticket": {
+    "claim": {
+      "title": "Claim your e-ticket",
+      "subtitle": "Scan the QR code the guard gave you at the entrance.",
+      "heading": "Claim your parking ticket",
+      "instructions": "Point your camera at the entry QR. The ticket is issued to this device and shown at the exit.",
+      "scan": "Scan the QR code",
+      "manualEntry": "Enter the code manually",
+      "codeLabel": "Entry code",
+      "codePlaceholder": "Paste the code from the QR",
+      "submit": "Claim my ticket",
+      "submitting": "Claiming…",
+      "alreadyClaimed": "This entry QR has already been claimed.",
+      "expired": "This entry QR has expired. Please ask the guard for a new one.",
+      "noQr": "No QR code found in the camera view.",
+      "success": {
+        "title": "Your ticket is ready",
+        "body": "Show this ticket to the guard when you leave the parking area.",
+        "validUntil": "Valid until"
+      }
+    }
+  },
+  "owner": {
+    "sites": {
+      "title": "Your parking sites",
+      "subtitle": "Sessions, payments and reports for the sites you own.",
+      "activeSites": "Active sites",
+      "deactivated": "Deactivated",
+      "viewSite": "Open site",
+      "noSites": "No sites yet."
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Platform administration",
+      "subtitle": "Revenue, adoption and platform management.",
+      "revenue": "Revenue",
+      "adoption": "Adoption",
+      "users": "Users",
+      "sites": "Sites",
+      "owners": "Owners",
+      "audit": "Audit log",
+      "collected": "Collected",
+      "exempt": "Exempt",
+      "voided": "Voided",
+      "failed": "Failed",
+      "uncollected": "Uncollected at close",
+      "uncapturedWarning": "Some payments in this period were recorded but never captured.",
+      "registeredUsers": "Registered users",
+      "distinctGuests": "Distinct guests ever parked",
+      "activeUsers": "Active users in period",
+      "sessionsCreated": "Sessions created",
+      "claimsIssued": "Entry claims issued",
+      "ticketsIssued": "Tickets issued",
+      "sessionsCompleted": "Sessions completed",
+      "claimRate": "Claim rate",
+      "completionRate": "Completion rate",
+      "repeatRate": "Repeat rate",
+      "registeredVsGuest": "Registered vs guest",
+      "perSite": "Per site",
+      "perOwner": "Per owner",
+      "monthlyTrend": "Monthly trend",
+      "noRawPlates": "Only aggregates are shown. Raw plates are never returned by the API."
+    }
+  },
+  "footer": {
+    "built": "Chlat-Park — E-Ticket Parking",
+    "specs": "Specifications",
+    "docs": "Documentation"
+  }
+}

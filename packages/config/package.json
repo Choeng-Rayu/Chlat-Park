@@ -1,0 +1,41 @@
+{
+  "name": "@chlat/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared TypeScript, ESLint and Prettier configuration for Chlat-Park",
+  "license": "UNLICENSED",
+  "files": [
+    "tsconfig.base.json",
+    "eslint",
+    "prettier"
+  ],
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./eslint": {
+      "types": "./eslint/index.d.ts",
+      "import": "./eslint/index.js",
+      "default": "./eslint/index.js"
+    },
+    "./prettier": {
+      "types": "./prettier/index.d.ts",
+      "import": "./prettier/index.js",
+      "default": "./prettier/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "lint": "echo \"@chlat/config is configuration only — nothing to lint.\"",
+    "typecheck": "tsc --noEmit",
+    "build": "echo \"@chlat/config ships plain JSON/JS config — nothing to build.\"",
+    "test": "echo \"@chlat/config has no tests.\""
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  }
+}

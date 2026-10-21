@@ -1,0 +1,196 @@
+# pnpm workspace configuration for Chlat-Park.
+#
+# pnpm 11 reads all non-registry settings from this file (not from .npmrc).
+# Reference: https://pnpm.io/settings
+
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# ---------------------------------------------------------------------------
+# Workspace linking behaviour.
+#
+# pnpm 11 reads these from this file — NOT from `.npmrc` and NOT from the
+# `pnpm` field of package.json (that field is ignored since v11).
+# ---------------------------------------------------------------------------
+
+# Resolve `workspace:*` ranges to the local package rather than the registry.
+linkWorkspacePackages: true
+
+# Prefer a local workspace package over a same-named registry package when
+# both could satisfy a range.
+preferWorkspacePackages: true
+
+# Auto-install missing peer dependencies instead of failing the install.
+autoInstallPeers: true
+
+# Do not fail the install on a peer-dependency mismatch; the lint job and
+# `pnpm install --strict-peer-dependencies` in CI surface real problems.
+strictPeerDependencies: false
+
+# Only download the optional platform-specific binaries for the platforms this
+# repo actually builds for. Without this, every install pulls the darwin,
+# windows and freebsd variants of @next/swc, @turbo, @tailwindcss/oxide and
+# @prisma/engines — several hundred megabytes that are never used.
+supportedArchitectures:
+  os:
+    - linux
+    - darwin
+  cpu:
+    - x64
+    - arm64
+
+# ---------------------------------------------------------------------------
+# Overrides — force transitive resolutions that the catalog alone cannot
+# reach. A dependency that pulls its own copy of these would otherwise
+# resolve to a version we have not vetted.
+#
+# `prisma@latest` is an 8.x release candidate and `typescript@latest` is 7.x,
+# but `@nestjs/swagger@12` peer-requires `^5.5.0 || ^6.0.0`. Pinning here
+# keeps the whole tree on the versions in the catalog.
+# ---------------------------------------------------------------------------
+overrides:
+  prisma: "catalog:"
+  "@prisma/client": "catalog:"
+  typescript: "catalog:"
+
+# ---------------------------------------------------------------------------
+# Catalog — the single place where every third-party version is pinned.
+#
+# Every workspace package references these with the `catalog:` protocol, so a
+# version bump happens exactly once, here. Versions are EXACT (no ^ / ~ / latest)
+# because this is a system with a security-sensitive auth surface: an
+# unexpected major upgrade must never land silently.
+# ---------------------------------------------------------------------------
+catalog:
+  # --- Framework / runtime -------------------------------------------------
+  next: 16.4.2
+  react: 19.3.1
+  react-dom: 19.3.1
+
+  # --- NestJS API ----------------------------------------------------------
+  "@nestjs/common": 12.2.0
+  "@nestjs/core": 12.2.0
+  "@nestjs/platform-express": 12.2.0
+  "@nestjs/cli": 12.0.10
+  "@nestjs/config": 4.0.2
+  "@nestjs/jwt": 11.0.0
+  "@nestjs/passport": 11.0.5
+  "@nestjs/swagger": 12.0.2
+  "@nestjs/terminus": 11.0.0
+  "@nestjs/throttler": 6.4.0
+  passport: 0.7.0
+  passport-jwt: 4.0.1
+
+  # --- Prisma --------------------------------------------------------------
+  prisma: 7.10.1
+  "@prisma/client": 7.10.1
+  "@prisma/adapter-pg": 7.10.1
+
+  # --- Validation / OpenAPI ------------------------------------------------
+  zod: 4.6.7
+  zod-openapi: 6.0.2
+  openapi-typescript: 7.13.0
+  openapi-fetch: 0.17.0
+
+  # --- DTO validation (NestJS) ---------------------------------------------
+  # NestJS's built-in `ValidationPipe` loads `class-validator` and
+  # `class-transformer` at runtime and calls `process.exit(1)` when they are
+  # missing. The API's *request* schemas live in `@chlat/contracts` as Zod
+  # schemas; these two packages back NestJS's own DTO pipeline and the
+  # `forbidNonWhitelisted` behaviour `main.ts` configures.
+  class-validator: 0.15.1
+  class-transformer: 0.5.1
+
+  # --- Toolchain -----------------------------------------------------------
+  typescript: 6.0.3
+  turbo: 2.11.10
+  eslint: 10.11.0
+  typescript-eslint: 8.71.0
+  "@eslint/js": 10.0.1
+  eslint-config-prettier: 10.1.8
+  prettier: 3.9.9
+
+  # --- Testing -------------------------------------------------------------
+  vitest: 5.0.5
+  "@vitest/coverage-v8": 5.0.5
+  "@playwright/test": 1.64.1
+  supertest: 7.1.4
+  "@types/supertest": 6.0.3
+
+  # --- Web UI --------------------------------------------------------------
+  next-intl: 4.14.9
+  tailwindcss: 4.3.3
+  "@tailwindcss/postcss": 4.3.3
+  postcss: 8.5.6
+
+  # --- Domain libraries ----------------------------------------------------
+  qrcode: 1.5.4
+  html5-qrcode: 2.3.8
+  "@types/qrcode": 1.5.5
+  argon2: 0.44.0
+
+  # --- API docs ------------------------------------------------------------
+  "@scalar/nestjs-api-reference": 1.2.30
+
+  # --- Shared --------------------------------------------------------------
+  "@types/node": 22.15.21
+  "@types/react": 19.3.0
+  "@types/react-dom": 19.3.0
+  yaml: 2.8.1
+
+# ---------------------------------------------------------------------------
+# allowBuilds — explicit allowlist for dependency install/postinstall scripts.
+#
+# pnpm 11 does not run dependency lifecycle scripts unless they are listed
+# here (`strictDepBuilds` defaults to true, so an unlisted package that needs
+# a build script fails the install). `true` = allow, `false` = explicitly
+# refuse. Every entry below is justified:
+# ---------------------------------------------------------------------------
+allowBuilds:
+  # Prisma downloads/links its query engine binary and runs its postinstall
+  # hook. Without this the client generator produces an empty client.
+  prisma: true
+  "@prisma/client": true
+  "@prisma/engines": true
+  "@prisma/engines-version": true
+  prisma-config: true
+  # argon2 ships a native binding built with node-gyp/prebuild-install.
+  argon2: true
+  # esbuild ships a platform binary via a postinstall download.
+  esbuild: true
+  # Tailwind v4's oxide scanner is a native Rust addon.
+  "@tailwindcss/oxide": true
+  "@tailwindcss/oxide-linux-x64-gnu": true
+  "@tailwindcss/oxide-linux-x64-musl": true
+  # SWC (used by Next.js / NestJS build pipelines) ships native binaries.
+  "@swc/core": true
+  # Optional native accelerators; harmless when prebuilt binaries are present.
+  msgpackr-extract: true
+  unrs-resolver: true
+  # core-js only prints a funding banner — refuse the script, keep the code.
+  core-js: false
+  # @parcel/watcher ships a native file-watcher binding used by the dev
+  # server; it falls back to a JS watcher when the script does not run.
+  "@parcel/watcher": true
+  # @scarf/scarf only posts a download telemetry ping — refuse the script.
+  "@scarf/scarf": false
+
+# ---------------------------------------------------------------------------
+# Supply-chain guardrail: only install versions that have been published for
+# at least 24 hours, so a freshly published (possibly compromised) release
+# cannot be picked up by a normal install.
+# ---------------------------------------------------------------------------
+minimumReleaseAge: 1440
+
+# Packages that are allowed to bypass the 24h age gate, with the reason.
+# The rule supports `name@version` and `name@version || version` disjunctions.
+minimumReleaseAgeExclude:
+  # turbo 2.11.10 was published hours ago; it is the pinned version for this
+  # repo and is required for the monorepo task graph to work. The `@turbo/*`
+  # pattern also covers the per-platform binary packages that turbo depends
+  # on, which are published at the same time.
+  - "turbo@2.11.10"
+  - "@turbo/*"
+  # @nestjs/cli 12.0.10 was published hours ago and is the pinned CLI version.
+  - "@nestjs/cli@12.0.10"

@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["node"]
+  },
+  "include": ["eslint/**/*.js", "prettier/**/*.js"],
+  "exclude": ["node_modules", "dist", "**/*.d.ts"]
+}

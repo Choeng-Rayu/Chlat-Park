@@ -1,0 +1,36 @@
+import base from "@chlat/config/eslint";
+
+/**
+ * The web app's ESLint config.
+ *
+ * It starts from the shared config and relaxes the rules that clash with
+ * React's JSX model.
+ */
+export default [
+  ...base,
+  {
+    files: ["src/**/*.ts", "src/**/*.tsx", "next.config.ts"],
+    rules: {
+      // JSX props are not "unused variables" — the rule misreads them.
+      "no-undef": "off",
+    },
+  },
+  {
+    files: ["**/*.mjs", "**/*.js"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+        URL: "readonly",
+        fetch: "readonly",
+        setTimeout: "readonly",
+      },
+    },
+    rules: {
+      "no-undef": "off",
+    },
+  },
+  {
+    ignores: [".next/**", "out/**", "next-env.d.ts"],
+  },
+];

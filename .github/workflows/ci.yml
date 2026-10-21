@@ -1,0 +1,188 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# A new push to the same branch cancels the previous run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # `pnpm` is installed with the exact version pinned in `package.json`
+  # (`packageManager`). Corepack is intentionally NOT used: the bundled
+  # corepack in this image mishandles the pnpm release line.
+  PNPM_VERSION: "11.9.0"
+  NODE_VERSION: "22"
+
+jobs:
+  hygiene:
+    name: Hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Assert .env is gitignored
+        run: |
+          set -euo pipefail
+          if ! git check-ignore -q .env; then
+            echo "::error::.env is NOT gitignored. Add it to .gitignore before merging."
+            exit 1
+          fi
+          # The template must be tracked, otherwise the check above is vacuous.
+          if git check-ignore -q .env.example; then
+            echo "::error::.env.example is gitignored, but it must be committed."
+            exit 1
+          fi
+          echo "OK: .env is ignored and .env.example is tracked."
+
+      - name: Assert .env.example documents every secret
+        run: |
+          set -euo pipefail
+          missing=0
+          while IFS= read -r name; do
+            [ -n "$name" ] || continue
+            if ! grep -qE "^${name}=" .env.example; then
+              echo "::error::${name} is not documented in .env.example"
+              missing=1
+            fi
+          done <<'EOF'
+          DATABASE_URL
+          DIRECT_DATABASE_URL
+          JWT_ACCESS_SECRET
+          JWT_REFRESH_SECRET
+          JWT_ACCESS_TTL
+          JWT_REFRESH_TTL
+          PLATE_PEPPER
+          ENCRYPTION_KEY
+          NEXT_PUBLIC_API_URL
+          API_URL
+          API_PORT
+          NODE_ENV
+          CORS_ORIGINS
+          RATE_LIMIT_TTL_MS
+          RATE_LIMIT_LIMIT
+          RATE_LIMIT_LOGIN_TTL_MS
+          RATE_LIMIT_LOGIN_LIMIT
+          TELEGRAM_BOT_TOKEN
+          TELEGRAM_WEBHOOK_SECRET
+          EOF
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::.env.example is missing one or more required variables."
+            exit 1
+          fi
+          echo "OK: every required variable is documented."
+
+      - name: Assert no secret is committed under a NEXT_PUBLIC_ prefix
+        run: |
+          set -euo pipefail
+          if grep -rInE "^NEXT_PUBLIC_[A-Z0-9_]*(SECRET|TOKEN|KEY|PEPPER|PASSWORD)" \
+            --include="*.example" --include="*.env*" . ; then
+            echo "::error::A NEXT_PUBLIC_* variable looks like a secret."
+            exit 1
+          fi
+          echo "OK: no NEXT_PUBLIC_* variable looks like a secret."
+
+      - name: Assert the lockfile is up to date
+        run: |
+          set -euo pipefail
+          corepack enable --install-directory "$HOME/.local/bin" 2>/dev/null || true
+          npm install --global "pnpm@${PNPM_VERSION}"
+          pnpm install --frozen-lockfile --ignore-scripts
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install pnpm
+        run: npm install --global "pnpm@${PNPM_VERSION}"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check formatting
+        run: pnpm format:check
+      - name: Lint
+        run: pnpm lint
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install pnpm
+        run: npm install --global "pnpm@${PNPM_VERSION}"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: chlat
+          POSTGRES_PASSWORD: chlat
+          POSTGRES_DB: chlat_park_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U chlat -d chlat_park_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://chlat:chlat@localhost:5432/chlat_park_test?schema=public
+      DIRECT_DATABASE_URL: postgresql://chlat:chlat@localhost:5432/chlat_park_test?schema=public
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install pnpm
+        run: npm install --global "pnpm@${PNPM_VERSION}"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run the test suite
+        run: pnpm test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install pnpm
+        run: npm install --global "pnpm@${PNPM_VERSION}"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm build
+      - name: Upload the build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            apps/api/dist
+            apps/web/.next
+          retention-days: 7
+          if-no-files-found: ignore

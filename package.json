@@ -1,0 +1,43 @@
+{
+  "name": "chlat-park",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Chlat-Park — e-ticket parking system (monorepo root)",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint -- --fix",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test -- --coverage",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,cjs,json,md,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,cjs,json,md,yaml,yml}\"",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "db:generate": "pnpm --filter @chlat/api run db:generate",
+    "db:migrate": "pnpm --filter @chlat/api run db:migrate",
+    "db:deploy": "pnpm --filter @chlat/api run db:deploy",
+    "db:seed": "pnpm --filter @chlat/api run db:seed",
+    "db:reset": "pnpm --filter @chlat/api run db:reset",
+    "db:studio": "pnpm --filter @chlat/api run db:studio",
+    "openapi": "pnpm --filter @chlat/contracts run openapi",
+    "openapi:types": "pnpm --filter @chlat/api-client run generate"
+  },
+  "devDependencies": {
+    "@chlat/config": "workspace:*",
+    "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "prettier": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  }
+}

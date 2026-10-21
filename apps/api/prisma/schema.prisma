@@ -1,0 +1,140 @@
+// =============================================================================
+// Chlat-Park — Prisma schema
+//
+// THIS IS THE FOUNDATION SCHEMA, NOT THE FULL DOMAIN SCHEMA.
+//
+// It contains only what the API skeleton needs to boot and to prove the
+// authorization core works: the `User` model, the `Permission` catalogue
+// table, and the `RolePermission` join table.
+//
+// The FULL domain schema (parking sites, owners, guards, parking sessions,
+// entry claims, tickets, payments, manual reviews, audit log, user permission
+// grants) is written by the backend developer against `specs/data/schema.md`.
+// The models below are the ones that schema defines, with the same field
+// names, so the extension is additive: the tables here become the real
+// tables.
+//
+// The authoritative model definitions are in:
+//   - specs/data/schema.md              — the data model of record
+//   - specs/architecture/rbac-design.md §8 — the RBAC models
+//   - packages/contracts/src/permissions.ts — the permission catalogue
+//
+// Rules for the extension:
+//   - Money is always an integer minor unit (`amountMinor`), never a float.
+//   - Timestamps are `timestamptz(3)`.
+//   - Identifiers are `uuid`.
+//   - Nothing is hard-deleted; a row is deactivated or redacted.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+/// The coarse account role. See `specs/security/access-control-matrix.md` §2.
+enum UserRole {
+  super_admin
+  owner
+  guard
+  user
+}
+
+/// The account state. A suspended account keeps its data for audit.
+enum UserStatus {
+  active
+  suspended
+  pending
+}
+
+/// The primary scope kind of an account.
+enum ScopeKind {
+  platform
+  owned
+  assigned
+  self
+}
+
+/// The scope a *permission* acts within.
+///
+/// This is the catalogue scope, not the actor scope: it says what kind of
+/// thing the permission acts on, not where the actor may act. It matches
+/// `PermissionScopeKind` in `packages/contracts/src/permissions.ts`.
+enum PermissionScopeKind {
+  platform
+  site
+  self
+  public
+}
+
+// -----------------------------------------------------------------------------
+// Identity
+// -----------------------------------------------------------------------------
+
+/// A person who can sign in to the staff and owner surfaces.
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String?    @unique
+  phone        String?    @unique
+  passwordHash String?
+  displayName  String?
+  role         UserRole   @default(user)
+  status       UserStatus @default(active)
+  scopeKind    ScopeKind  @default(self)
+
+  /// Bumped on any permission or assignment change. The authorization cache is
+  /// keyed by `(userId, authzVersion)`, so a bump invalidates every cached
+  /// permission set for that user at once — revocation is immediate.
+  authzVersion Int @default(1)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([role, status])
+  @@map("users")
+}
+
+// -----------------------------------------------------------------------------
+// Authorization
+// -----------------------------------------------------------------------------
+
+/// The permission catalogue. The rows are materialised from `PERMISSIONS` in
+/// `packages/contracts/src/permissions.ts` by the seed script; the key is the
+/// contract's permission key verbatim.
+model Permission {
+  key         String              @id
+  description String
+  scopeKind   PermissionScopeKind
+  category    String
+  createdAt   DateTime            @default(now()) @db.Timestamptz(3)
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+/// The permissions a coarse role holds.
+///
+/// The rows are materialised from `ROLE_PERMISSIONS` in
+/// `packages/contracts/src/permissions.ts` by the seed script.
+model RolePermission {
+  role          UserRole
+  permissionKey String
+
+  permission Permission @relation(fields: [permissionKey], references: [key], onDelete: Cascade)
+
+  @@id([role, permissionKey])
+  @@index([permissionKey])
+  @@map("role_permissions")
+}
+
+/// The join between a role and a permission is deliberately *not* modelled as
+/// a relation on `User`: a role permission belongs to the role, not to any
+/// particular user. The seed script materialises these rows from
+/// `ROLE_PERMISSIONS` in `@chlat/contracts`.
