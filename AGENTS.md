@@ -145,10 +145,13 @@ which one it is, in the pull request.
 
 ## The API conventions
 
-- **Prefix:** `v1`, set once by `main.ts` (`app.setGlobalPrefix("v1")`). **Never** write `v1/`
-  inside an `@Controller()` — the route becomes `/v1/v1/…` and silently 404s.
-- **Full path:** `/api/v1/<route>` — the `api` part comes from the gateway / the OpenAPI server,
-  the `v1` from the global prefix.
+- **Prefix:** `api/v1`, set once by `main.ts` from the contracts' `API_PREFIX`
+  (`app.setGlobalPrefix(API_PREFIX)`). **Never** write `api/v1/` inside an
+  `@Controller()` — the route becomes `/api/v1/api/v1/…` and silently 404s.
+- **Single source of truth:** the prefix is defined in `packages/contracts` and imported by the
+  server, the OpenAPI document, the generated client and the web app's fetch wrapper. Do not
+  write the literal string in a second place — that is how the server and the client drifted
+  apart once already, and every client call 404'd.
 - **Envelope:** `{ success, data, message, error }` on every response, success or failure.
 - **Error codes:** `error.code` is stable and is what clients branch on. `error.message` is for
   humans and may be reworded. `error.requestId` is the correlation id.
