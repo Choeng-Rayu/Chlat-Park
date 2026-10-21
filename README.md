@@ -61,7 +61,7 @@ values, not real secrets — replace them before doing anything that matters. Se
 docker compose up -d db
 ```
 
-The database is published on `127.0.0.1:5432` only. It is never exposed on the public internet.
+The database is published on `127.0.0.1:5433` only (the host port; 5432 is often taken by another local Postgres). It is never exposed on the public internet.
 
 ### 4. Apply the migrations and seed the reference data
 
@@ -98,7 +98,7 @@ That starts everything through Turborepo:
 | The web app | http://localhost:3000 |
 | The API | http://localhost:3001/api/v1 |
 | The API reference (Scalar) | http://localhost:3001/api/v1/docs |
-| The database | `postgresql://chlat:chlat@localhost:5432/chlat_park` |
+| The database | `postgresql://chlat:chlat@localhost:5433/chlat_park` |
 
 The health probes are public:
 

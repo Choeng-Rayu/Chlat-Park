@@ -3,6 +3,8 @@ import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 
+import { API_PREFIX } from "@chlat/contracts";
+
 import { AppModule } from "../../src/app.module.js";
 import { UnannotatedFixtureController } from "../fixtures/deny-by-default.fixture.js";
 
@@ -40,7 +42,10 @@ export async function createTestApp(): Promise<NestExpressApplication> {
     abortOnError: false,
   });
 
-  app.setGlobalPrefix("v1");
+  // The same prefix the server uses, imported from the contracts so the two
+  // can never drift. A hardcoded string here once made every e2e assertion
+  // 404 against a correctly-mounted route.
+  app.setGlobalPrefix(API_PREFIX);
 
   app.useGlobalPipes(
     new ValidationPipe({

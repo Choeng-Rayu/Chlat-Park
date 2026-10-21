@@ -15,8 +15,27 @@
  */
 
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
 import { PERMISSIONS, PERMISSION_KEYS, ROLE_PERMISSIONS, ROLES, type Role } from "@chlat/contracts";
+
+import type { PrismaClient as PrismaClientType } from "../src/generated/prisma/client.js";
+
+/**
+ * The generated Prisma client.
+ *
+ * The client is *generated* — `prisma generate` writes TypeScript to
+ * `src/generated/prisma`, and the API's build compiles it to
+ * `dist/generated/prisma`. The seed runs against the **compiled** output,
+ * because the generated sources import each other with `.js` extensions that
+ * Node's type-stripping cannot resolve from TypeScript source.
+ *
+ * The import is dynamic, and the specifier is built at runtime, so
+ * TypeScript does not try to resolve a declaration file for the compiled
+ * JavaScript. The *type* comes from the generated source; the *value* comes
+ * from the compiled file.
+ */
+const { PrismaClient } = (await import(
+  new URL("../dist/generated/prisma/client.js", import.meta.url).href
+)) as unknown as { PrismaClient: typeof PrismaClientType };
 
 const connectionString = process.env["DIRECT_DATABASE_URL"] ?? process.env["DATABASE_URL"];
 

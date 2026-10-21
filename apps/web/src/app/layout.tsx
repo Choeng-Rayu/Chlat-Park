@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   description:
     "Chlat-Park is an e-ticket parking system: manual, guard-assisted motorcycle parking entry and exit, where a paper ticket is replaced by a QR-linked e-ticket.",
   applicationName: "Chlat-Park",
+  icons: { icon: "/favicon.svg" },
   robots: { index: false, follow: false },
 };
 

@@ -22,7 +22,7 @@ import { PermissionsGuard } from "./permissions.guard.js";
 
 /** A minimal execution context over a handler and an optional actor. */
 function contextFor(handler: object, actor?: ActorContext): ExecutionContext {
-  const request: Record<string, unknown> = { method: "GET", path: "/v1/example" };
+  const request: Record<string, unknown> = { method: "GET", path: "/api/v1/example" };
   if (actor) {
     request[ACTOR_HEADER] = actor;
   }

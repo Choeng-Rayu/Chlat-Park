@@ -21,8 +21,10 @@ services:
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     ports:
       # Bound to the loopback interface: the database is not reachable from
-      # outside this machine.
-      - "127.0.0.1:5432:5432"
+      # outside this machine. The host port is 5433 because 5432 is commonly
+      # taken by another local Postgres — the container port is what the
+      # service-to-service network uses, and it stays 5432.
+      - "127.0.0.1:5433:5432"
     volumes:
       # Postgres 18 moved PGDATA into a major-version-specific subdirectory and
       # refuses to start if a volume is mounted at the legacy
@@ -41,11 +43,16 @@ services:
   migrate:
     # A one-shot service that applies the migrations and seeds the database.
     # It runs after `db` is healthy and exits with code 0.
+    #
+    # It uses the `migrate` stage of the API Dockerfile, not the runtime
+    # stage: the Prisma CLI is a devDependency and is therefore absent from
+    # the production dependency tree that the runtime image installs.
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+      target: migrate
     command: >
-      sh -c "npx prisma migrate deploy && npx prisma db seed"
+      sh -c "pnpm --filter @chlat/api run db:deploy && pnpm --filter @chlat/api run db:seed"
     environment:
       DATABASE_URL: postgresql://chlat:chlat@db:5432/chlat_park?schema=public
       DIRECT_DATABASE_URL: postgresql://chlat:chlat@db:5432/chlat_park?schema=public

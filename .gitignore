@@ -79,6 +79,10 @@ next-env.d.ts
 apps/api/prisma/*.db
 apps/api/prisma/*.db-journal
 
+# The generated Prisma client — machine-written by `prisma generate`, and
+# platform-specific. It is rebuilt by `pnpm --filter @chlat/api run build`.
+apps/api/src/generated/
+
 # ---------------------------------------------------------------------------
 # Misc
 # ---------------------------------------------------------------------------

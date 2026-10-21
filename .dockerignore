@@ -1,0 +1,74 @@
+# ---------------------------------------------------------------------------
+# Docker build context exclusions.
+#
+# The Dockerfiles do a `COPY . .` in their build stage, so anything left in
+# this list would be sent to the Docker daemon and copied into the image.
+# That is slow, it inflates the image, and — worse — a host `node_modules`
+# copied over a container one silently breaks the native bindings.
+# ---------------------------------------------------------------------------
+
+# Dependencies — the image installs its own, for the target platform.
+node_modules
+**/node_modules
+.pnpm-store
+
+# Build output — the image builds from source.
+dist
+**/dist
+.next
+**/.next
+out
+**/out
+build
+**/build
+.turbo
+**/.turbo
+*.tsbuildinfo
+
+# Tests and coverage.
+coverage
+**/coverage
+.nyc_output
+playwright-report
+**/playwright-report
+test-results
+**/test-results
+blob-report
+**/blob-report
+.playwright
+**/.playwright
+
+# VCS and CI — the build does not need the history.
+.git
+.gitignore
+.github
+
+# Local environment — real secrets must never enter a build layer.
+# `.env.example` IS kept: the image's entrypoint may read it for documentation.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Editor and OS noise.
+.vscode
+.idea
+**/*.swp
+**/*.swo
+**/*~
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files.
+logs
+**/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.tmp
+tmp
+**/tmp
+
+# The lockfile IS required: the Dockerfiles run `pnpm fetch --frozen-lockfile`.
+# Excluding it breaks the reproducible, offline install.

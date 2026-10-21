@@ -15,7 +15,7 @@
 |---|---|---|---|---|
 | `web` | `apps/web` | `ghcr.io/<org>/chlat-web:<git-sha>` | 3000 | Next.js, standalone output |
 | `api` | `apps/api` | `ghcr.io/<org>/chlat-api:<git-sha>` | 3001 | NestJS |
-| `db` | — | `postgres:16-alpine` | 5432 (internal) | The persistent volume |
+| `db` | — | `postgres:18-alpine` | 5432 (internal), 5433 (host) | The persistent volume |
 
 The Telegram bot is **not** a separate service — it is a module inside `api` (ADR-001).
 
@@ -91,6 +91,19 @@ DATABASE_URL='postgresql://…' pnpm --filter @chlat/api prisma db seed
 # 3. Deploy the api and the web through Coolify (or):
 DATABASE_URL='…' pnpm --filter @chlat/api build && pnpm --filter @chlat/api start:prod
 ```
+
+> **The Prisma client is generated, not committed.** The schema uses the `prisma-client` generator with a
+> fixed output path (`apps/api/src/generated/prisma`), so the client is compiled into `dist/generated/prisma`
+> alongside the rest of the API. A build that skips `prisma generate` produces an API that boots and then
+> fails on the first query. The Dockerfiles run `pnpm --filter @chlat/api run db:generate` before compiling,
+> and a local build must do the same:
+>
+> ```bash
+> pnpm --filter @chlat/api run db:generate && pnpm --filter @chlat/api run build
+> ```
+>
+> The generator is platform-specific, so it must run *inside* the image, not on the host, when the target
+> platform differs from the build machine.
 
 ### 2.4 The seed
 

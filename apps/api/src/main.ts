@@ -4,6 +4,8 @@ import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 
+import { API_PREFIX } from "@chlat/contracts";
+
 import { AppModule } from "./app.module.js";
 import { getEnv } from "./config/env.js";
 
@@ -13,13 +15,17 @@ import { getEnv } from "./config/env.js";
  * The bootstrap does four things and nothing else:
  *
  * 1. Validates the environment (and refuses to start when it is invalid).
- * 2. Mounts every route under `/v1`.
+ * 2. Mounts every route under `/api/v1`.
  * 3. Installs the global validation pipe and the CORS policy.
  * 4. Listens.
  *
- * The global prefix is `v1` and **only** `v1` — a controller must never
- * write `v1/` into its own `@Controller()` path, or the route becomes
- * `/v1/v1/…` and silently 404s.
+ * The global prefix is `api/v1` and **only** `api/v1` — a controller must
+ * never write `api/v1/` into its own `@Controller()` path, or the route
+ * becomes `/api/v1/api/v1/…` and silently 404s.
+ *
+ * The prefix is defined once, in `packages/contracts` (`API_PREFIX`), and
+ * imported here — the OpenAPI document, the generated typed client and this
+ * server must never disagree about where a route lives.
  */
 async function bootstrap(): Promise<void> {
   const env = getEnv();
@@ -31,7 +37,7 @@ async function bootstrap(): Promise<void> {
     logger: env.NODE_ENV === "test" ? false : undefined,
   });
 
-  app.setGlobalPrefix("v1");
+  app.setGlobalPrefix(API_PREFIX);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -62,7 +68,7 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(env.API_PORT, "0.0.0.0");
 
-  console.warn(`[api] Chlat-Park API listening on http://0.0.0.0:${env.API_PORT}/v1`);
+  console.warn(`[api] Chlat-Park API listening on http://0.0.0.0:${env.API_PORT}${API_PREFIX}`);
 }
 
 void bootstrap().catch((error: unknown) => {

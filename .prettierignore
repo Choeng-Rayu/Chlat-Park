@@ -20,6 +20,10 @@ specs/api/openapi.yaml
 # Generated API client types — produced by `pnpm --filter @chlat/api-client run generate`
 packages/api-client/src/schema.d.ts
 
+# Generated Prisma client — machine-written by `prisma generate` from the
+# schema. Formatting it would fight the generator on every run.
+apps/api/src/generated/
+
 # Markdown — the specs tree is prose-heavy; reformatting it churns diffs
 *.md
 

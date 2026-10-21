@@ -5,7 +5,7 @@ import { Controller, Get } from "@nestjs/common";
  *
  * It exists only in the test tree. The e2e suite mounts it to prove the
  * deny-by-default rule at the HTTP boundary: a request to
- * `GET /v1/test/unannotated` must be answered with 403, not 200 — even with
+ * `GET /api/v1/test/unannotated` must be answered with 403, not 200 — even with
  * a valid super-admin token.
  *
  * This is the fixture that catches a regression where `PermissionsGuard` is

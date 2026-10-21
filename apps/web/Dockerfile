@@ -15,6 +15,14 @@ FROM node:${NODE_VERSION}-alpine AS deps
 ARG PNPM_VERSION
 ENV PNPM_HOME=/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
+# pnpm refuses to run non-interactively when it would have to remove an
+# existing `node_modules` directory, and a Docker build has no TTY:
+#
+#   ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY
+#
+# `CI=true` is the documented way to say "yes, proceed without asking", and it
+# is what every CI runner already sets.
+ENV CI=true
 RUN corepack enable && corepack prepare "pnpm@${PNPM_VERSION}" --activate
 WORKDIR /app
 
@@ -35,6 +43,7 @@ FROM node:${NODE_VERSION}-alpine AS build
 ARG PNPM_VERSION
 ENV PNPM_HOME=/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
+ENV CI=true
 RUN corepack enable && corepack prepare "pnpm@${PNPM_VERSION}" --activate
 WORKDIR /app
 

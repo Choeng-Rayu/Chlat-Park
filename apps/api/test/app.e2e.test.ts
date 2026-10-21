@@ -3,6 +3,8 @@ import { JwtService } from "@nestjs/jwt";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { API_PREFIX } from "@chlat/contracts";
+
 import type { AccessTokenPayload } from "../src/common/auth/actor.js";
 import { createTestApp } from "./helpers/create-test-app.js";
 
@@ -47,7 +49,7 @@ describe("API (e2e)", () => {
   });
 
   it("serves the liveness probe", async () => {
-    const response = await request(app.getHttpServer()).get("/v1/health/live");
+    const response = await request(app.getHttpServer()).get(`${API_PREFIX}/health/live`);
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
@@ -59,7 +61,7 @@ describe("API (e2e)", () => {
   });
 
   it("serves the readiness probe", async () => {
-    const response = await request(app.getHttpServer()).get("/v1/health/ready");
+    const response = await request(app.getHttpServer()).get(`${API_PREFIX}/health/ready`);
 
     // 200 when the database is reachable, 503 when it is not. The e2e suite
     // runs without a database, so 503 is the expected answer here — what
@@ -70,7 +72,7 @@ describe("API (e2e)", () => {
   });
 
   it("rejects a request to an unknown route with the error envelope", async () => {
-    const response = await request(app.getHttpServer()).get("/v1/does-not-exist");
+    const response = await request(app.getHttpServer()).get(`${API_PREFIX}/does-not-exist`);
 
     expect(response.status).toBe(404);
     expect(response.body).toMatchObject({
@@ -82,7 +84,7 @@ describe("API (e2e)", () => {
   });
 
   it("rejects an unauthenticated request to a non-public route with 401", async () => {
-    const response = await request(app.getHttpServer()).get("/v1/test/unannotated");
+    const response = await request(app.getHttpServer()).get(`${API_PREFIX}/test/unannotated`);
 
     // The JWT guard runs first: a request with no token is *unauthenticated*
     // (401), not merely *unauthorized* (403).
@@ -93,7 +95,7 @@ describe("API (e2e)", () => {
 
   it("denies an un-annotated route with 403, even for a super admin", async () => {
     const response = await request(app.getHttpServer())
-      .get("/v1/test/unannotated")
+      .get(`${API_PREFIX}/test/unannotated`)
       .set("Authorization", `Bearer ${accessToken}`);
 
     // The super admin holds every permission in the catalogue. The 403 comes

@@ -1,0 +1,10 @@
+User-agent: *
+# The guard dashboard, the owner console and the super admin console are
+# private surfaces and must never be indexed.
+Disallow: /admin
+Disallow: /guard
+Disallow: /owner
+Disallow: /api
+# The ticket pages are public but carry no search value, and a ticket
+# reference in a search index would be a small information leak.
+Disallow: /ticket
