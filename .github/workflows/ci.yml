@@ -90,7 +90,6 @@ jobs:
       - name: Assert the lockfile is up to date
         run: |
           set -euo pipefail
-          corepack enable --install-directory "$HOME/.local/bin" 2>/dev/null || true
           npm install --global "pnpm@${PNPM_VERSION}"
           pnpm install --frozen-lockfile --ignore-scripts
 
@@ -99,12 +98,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
       - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: Install pnpm
-        run: npm install --global "pnpm@${PNPM_VERSION}"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Check formatting
@@ -117,12 +118,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
       - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: Install pnpm
-        run: npm install --global "pnpm@${PNPM_VERSION}"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Typecheck
@@ -151,12 +154,14 @@ jobs:
       NODE_ENV: test
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
       - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: Install pnpm
-        run: npm install --global "pnpm@${PNPM_VERSION}"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Run the test suite
@@ -167,12 +172,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
       - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: Install pnpm
-        run: npm install --global "pnpm@${PNPM_VERSION}"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build
@@ -184,5 +191,81 @@ jobs:
           path: |
             apps/api/dist
             apps/web/.next
+          retention-days: 7
+          if-no-files-found: ignore
+
+  e2e:
+    name: E2E
+    runs-on: ubuntu-latest
+    env:
+      # The compose stack publishes both services on the loopback interface,
+      # so the suite talks to them on the runner itself.
+      E2E_BASE_URL: http://127.0.0.1:3000
+      E2E_API_URL: http://127.0.0.1:3001
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The stack is brought up with docker compose — the same way it is
+      # brought up on a developer machine. Playwright never starts the app:
+      # its config has no `webServer` block on purpose.
+      - name: Build the stack's images
+        run: docker compose build
+      - name: Start the database
+        # Postgres 18 moved PGDATA into a major-version-specific
+        # subdirectory and refuses to start when a volume is mounted at the
+        # legacy /var/lib/postgresql/data path. The compose file mounts the
+        # volume at /var/lib/postgresql, which is the supported layout.
+        run: docker compose up -d db
+      - name: Apply the migrations and seed the database
+        run: docker compose run --rm migrate
+      - name: Start the API and the web app
+        run: docker compose up -d api web
+      - name: Wait for the stack to answer
+        run: |
+          set -euo pipefail
+          wait_for() {
+            local url="$1"
+            for attempt in $(seq 1 60); do
+              if curl -fsS -o /dev/null "$url"; then
+                echo "OK: $url"
+                return 0
+              fi
+              echo "Waiting for $url ($attempt/60)…"
+              sleep 2
+            done
+            echo "::error::Timed out waiting for $url"
+            docker compose logs
+            return 1
+          }
+          wait_for "http://127.0.0.1:3001/api/v1/health/ready"
+          wait_for "http://127.0.0.1:3000/en"
+
+      - name: Install the Playwright browser
+        # The browser cache is deliberately NOT cached between runs: the
+        # chromium build is large and the runner's disk is the scarce
+        # resource, so it is downloaded again every time. `--with-deps`
+        # installs the system libraries chromium needs, so the runner image
+        # does not have to carry them.
+        run: pnpm --filter @chlat/web exec playwright install --with-deps chromium
+      - name: Run the e2e suite
+        run: pnpm --filter @chlat/web test:e2e
+      - name: Upload the failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
           retention-days: 7
           if-no-files-found: ignore

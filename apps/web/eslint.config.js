@@ -31,6 +31,24 @@ export default [
     },
   },
   {
+    // The Playwright harness runs in Node, not in the browser, so it needs
+    // the Node globals and the same `no-undef` relaxation as the scripts
+    // above.
+    files: ["playwright.config.ts", "e2e/**/*.ts"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+        URL: "readonly",
+        fetch: "readonly",
+        setTimeout: "readonly",
+      },
+    },
+    rules: {
+      "no-undef": "off",
+    },
+  },
+  {
     ignores: [".next/**", "out/**", "next-env.d.ts"],
   },
 ];

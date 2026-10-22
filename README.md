@@ -131,8 +131,7 @@ chlat-park/
 ├── packages/
 │   ├── config/               # The shared TypeScript, ESLint and Prettier configuration
 │   ├── contracts/            # The Zod schemas, the permission catalogue, the OpenAPI document
-│   ├── api-client/           # The typed HTTP client, generated from the OpenAPI document
-│   └── ui/                   # The shared React primitives
+│   └── api-client/           # The typed HTTP client, generated from the OpenAPI document
 │
 ├── specs/                    # The specifications — the source of truth for behaviour
 │   ├── README.md             # The SDD loop, the ID namespace, the DoR and the DoD

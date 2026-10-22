@@ -18,7 +18,6 @@
   "dependencies": {
     "@chlat/api-client": "workspace:*",
     "@chlat/contracts": "workspace:*",
-    "@chlat/ui": "workspace:*",
     "next": "catalog:",
     "next-intl": "catalog:",
     "qrcode": "catalog:",

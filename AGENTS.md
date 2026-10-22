@@ -58,6 +58,7 @@ Feature modules live under `src/modules/<feature>/` and are added as the domain 
 | `src/app/[locale]/(owner)/` | The owner surfaces — the site list and the reports. |
 | `src/app/[locale]/(admin)/` | **The admin console. Owned by vireaboth.** |
 | `src/lib/i18n/` | `config.ts` (the locales), `routing.ts`, `request.ts`, `navigation.ts`. |
+| `src/components/` | **Every shared React component of the app lives here** — there is one web app, so there is one components folder. |
 | `src/lib/api/client.ts` | The typed fetch wrapper over `@chlat/api-client`. |
 | `src/lib/auth/session.ts` | Reading the HttpOnly cookie, and the sign-out action stub. |
 | `src/messages/` | `en.json` and `km.json`. The key convention is `guard.entry.title`, `ticket.claim.heading`, `admin.dashboard.revenue`. |
@@ -70,7 +71,6 @@ Feature modules live under `src/modules/<feature>/` and are added as the domain 
 |---|---|
 | `contracts` | The Zod schemas, the permission catalogue, the route registry and the OpenAPI document. **The single source of truth for the contract.** |
 | `api-client` | The typed HTTP client, generated from `specs/api/openapi.yaml`. |
-| `ui` | The shared React primitives. |
 | `config` | The shared TypeScript, ESLint and Prettier configuration. |
 
 ---

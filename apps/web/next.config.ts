@@ -6,8 +6,8 @@ import type { NextConfig } from "next";
  * The Next.js configuration.
  *
  * `transpilePackages` lets the app consume the workspace packages' TypeScript
- * sources directly, so a change in `@chlat/ui` is picked up without a rebuild
- * of the package.
+ * sources directly, so a change in `@chlat/contracts` is picked up without a
+ * rebuild of the package.
  *
  * Note: Next 16 removed the `eslint` config key — linting now runs as a
  * separate step (`pnpm lint`), which is what the CI workflow does. Do not
@@ -22,7 +22,7 @@ const withNextIntl = createNextIntlPlugin("./src/lib/i18n/request.ts");
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  transpilePackages: ["@chlat/ui", "@chlat/contracts", "@chlat/api-client"],
+  transpilePackages: ["@chlat/contracts", "@chlat/api-client"],
   output: "standalone",
   typedRoutes: true,
 };

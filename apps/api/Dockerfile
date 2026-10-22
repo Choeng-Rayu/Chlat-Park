@@ -47,7 +47,6 @@ COPY apps/web/package.json apps/web/package.json
 COPY packages/config/package.json packages/config/package.json
 COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/api-client/package.json packages/api-client/package.json
-COPY packages/ui/package.json packages/ui/package.json
 
 # `pnpm fetch` downloads every package into the store without linking it, so
 # the install in the next stage is fully offline.

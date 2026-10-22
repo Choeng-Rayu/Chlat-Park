@@ -32,7 +32,6 @@ COPY apps/web/package.json apps/web/package.json
 COPY packages/config/package.json packages/config/package.json
 COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/api-client/package.json packages/api-client/package.json
-COPY packages/ui/package.json packages/ui/package.json
 
 RUN pnpm fetch --frozen-lockfile --fetch-timeout 300000 --fetch-retries 5
 
@@ -53,7 +52,6 @@ COPY . .
 RUN pnpm install --offline --frozen-lockfile
 RUN pnpm --filter @chlat/contracts build \
  && pnpm --filter @chlat/api-client build \
- && pnpm --filter @chlat/ui build \
  && pnpm --filter @chlat/web run build
 
 # ---------------------------------------------------------------------------

@@ -60,7 +60,7 @@ and the payment ledger. That is a chain, and it belongs to one person.
 | `packages/contracts/src/schemas/parking.ts`, `ticket.ts`, `payment.ts` | | ● |
 | `packages/contracts/src/permissions.ts` | | ● |
 | `packages/api-client/**` | | ● |
-| `packages/ui/**` | ◐ | ◐ |
+| `apps/web/src/components/**` (the shared components, outside the admin console) | ◐ | ◐ |
 | `specs/**` | | ● |
 | `docs/**` | ◐ | ◐ |
 | `docker-compose.yml`, `.github/workflows/**`, the root manifests | | ● |
@@ -95,8 +95,43 @@ Four areas are genuinely shared. The rule for each:
 |---|---|
 | `src/messages/{en,km}.json` | **Additive only.** Each developer adds keys under their own namespace and never removes or rewords another person's keys. A merge conflict in this file is resolved by taking **both** sides. |
 | `packages/contracts` | The **integration point**. Changes land in `main` first (§4). |
-| `packages/ui` | Additive only. A new shared primitive is added by whoever needs it, and the other developer consumes it later. |
+| `apps/web/src/components/**` | Additive only. A new shared component is added by whoever needs it, and the other developer consumes it later. |
 | `docs/**` | Additive only. |
+
+### 2.3 The design system of record
+
+There is **one** design system, and both of you build against it. Nobody
+invents a second one.
+
+**The design system of record is `apps/web/src/styles/globals.css`.** It
+holds the token scale and the component classes:
+
+| What | Where | What it gives you |
+|---|---|---|
+| The colour tokens | `@theme` in `globals.css` | `ink-*` (text and surfaces, 50 → 950), `accent-*` (the primary action, 400 → 700), `warn-500`, `danger-500` |
+| The component classes | `@layer components` in `globals.css` | `.surface`, `.btn`, `.btn-primary`, `.btn-secondary`, `.link` |
+| The type and radius tokens | `@theme` in `globals.css` | `font-sans`, `font-mono`, `rounded-card` |
+
+Use those tokens and those classes. A colour that is not in the scale is a
+new decision, and a new decision needs a conversation — it does not get
+made by copying a hex value into a component.
+
+**There is one components folder: `apps/web/src/components/`.** Every
+shared React component of the app lives there — the header, the footer and
+everything either of you adds. If a component is genuinely needed by both
+web surfaces, it still lives in `apps/web/src/components/`: there is one
+web app, so there is one components folder. A second package of components
+would add a build step, a dependency edge and a Tailwind `@source`
+registration for no benefit. (The `packages/ui` package that once existed
+was removed for exactly this reason — see
+[`../specs/decisions/ADR-001-monorepo.md`](../specs/decisions/ADR-001-monorepo.md).)
+
+**Every message key is added to `en.json` *and* `km.json`.** A key that
+exists in only one catalogue renders as the key itself in the other
+language. The convention is **dotted and namespace-scoped**: the namespace
+is the surface (`guard`, `owner`, `admin`, `ticket`, `common`, `nav`,
+`home`), and the key names the thing —
+`guard.entry.title`, `ticket.claim.heading`, `admin.dashboard.revenue`.
 
 ---
 
@@ -266,7 +301,7 @@ other person is never blocked by an unreviewed shape.
 | `src/messages/{en,km}.json` | **High** | Additive only. Each dev owns a namespace: `admin.*` for vireaboth, everything else for kitya. Never reword another person's key. |
 | `packages/contracts/src/schemas/admin.ts` | Medium | kitya owns it. vireaboth requests a change, it lands in `main` first. |
 | `packages/contracts/src/permissions.ts` | Medium | kitya owns it. A new `platform.*` permission is added with the route that needs it. |
-| `packages/ui/**` | Low | Additive only. |
+| `apps/web/src/components/**` | Low | Additive only. |
 | `apps/web/src/lib/api/client.ts` | Low | kitya owns it. vireaboth consumes `apiFetch`; if the console needs a new capability, it is added to the shared wrapper, not duplicated in the console. |
 | `apps/web/src/app/[locale]/layout.tsx` | Low | kitya owns it. It is the shared chrome (header, footer, providers). |
 
@@ -438,6 +473,7 @@ From `specs/README.md` §5 — a feature is merged only when:
 | A branch named `feature/admin-dashboard` | Nobody knows who reviews it | §4.1 |
 | Reformatting `src/messages/*.json` | It creates a conflict for no reason | §2.2 |
 | A super-admin shortcut in the guard | A shortcut is a permanent bypass | §3.5 rule 2 |
+| A second component package, or a second palette | One web app, one components folder, one token scale | §2.3 |
 | Committing to `main` directly | `main` must stay green | §4.4 |
 
 ---
@@ -453,6 +489,7 @@ From `specs/README.md` §5 — a feature is merged only when:
 | Know what "done" means | [`../specs/README.md`](../specs/README.md) §5 |
 | Know how to branch | This file, §4 |
 | Know what I must not touch | This file, §2.1 |
+| Know which design system to use | This file, §2.3, and `apps/web/src/styles/globals.css` |
 | Know the feature's requirements | [`../specs/features/admin-console/spec.md`](../specs/features/admin-console/spec.md) |
 | Know the feature's design | [`../specs/features/admin-console/design.md`](../specs/features/admin-console/design.md) |
 | Know how authorization works | [`../specs/architecture/rbac-design.md`](../specs/architecture/rbac-design.md) |

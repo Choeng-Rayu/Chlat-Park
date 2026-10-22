@@ -99,7 +99,7 @@
 
 - [ ] **T-D1 — Permission-aware UI helpers.**
   Satisfies: RBAC-002.
-  Files: `packages/ui/src/permissions.ts`, `apps/web/src/lib/auth/permissions.ts`.
+  Files: `apps/web/src/lib/auth/permissions.ts`.
   Notes: `can(permission)` helper reading the actor context from `/auth/me`; used to hide actions —
   never as the enforcement point.
 

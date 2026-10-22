@@ -117,7 +117,7 @@ name, an import path, or a route prefix.
 | `@chlat/contracts` | Zod schemas, TypeScript types, the permission catalogue, the OpenAPI generator | `apps/api` (validation), `apps/web` (types + client) |
 | `@chlat/api-client` | Generated typed HTTP client from the OpenAPI document | `apps/web`, `apps/api` tests |
 | `@chlat/config` | Shared TypeScript, ESLint, Prettier configuration | everything |
-| `@chlat/ui` | Shared React components (buttons, tables, QR renderer, status badges) | `apps/web` |
+| ~~`@chlat/ui`~~ | **Removed on 2026-10-21.** It had no consumers and its primitives did not match the app's design system. Shared React components live in `apps/web/src/components/`, and the design system of record is `apps/web/src/styles/globals.css`. See [ADR-001](../decisions/ADR-001-monorepo.md). | — |
 
 **Rule:** business rules live in `apps/api` only. `packages/contracts` may hold *schemas* and the
 *permission catalogue*, but never a rule such as "a session can only complete once" in executable

@@ -62,6 +62,29 @@ The data layer also needs to be chosen: Prisma with PostgreSQL, or a hand-rolled
 
 6. **The repository is a pnpm workspace** (`pnpm-workspace.yaml` + `pnpm-lock.yaml`).
 
+## Update — the `ui` package was removed (2026-10-21)
+
+**Status:** Accepted, partially reversed — decision 5's `packages/ui` entry no longer holds.
+
+The decision above stands as written: it records what was agreed at the time. The `ui` entry of
+decision 5 was **reversed on 2026-10-21**, and `packages/ui` no longer exists. The reasoning:
+
+* **It had no consumers.** Nothing imported `@chlat/ui`, so the package was a build step, a
+  dependency edge and a Tailwind `@source` registration for no benefit.
+* **It contradicted the app's actual design system.** The design system of record is the token
+  scale and the component classes in `apps/web/src/styles/globals.css` (`ink-*`, `accent-*`, `.btn`,
+  `.btn-primary`, `.btn-secondary`, `.surface`, `.link`). The package's primitives used Tailwind's
+  *default* palette (`neutral-*`, `sky-*`, `emerald-*`, `amber-*`, `red-*`) instead, so they could
+  never have matched the app.
+* **Its stylesheet was never imported.** `packages/ui/src/styles.css` registers `@source "./"` with
+  Tailwind's scanner, but no application file imported it — so the primitives would have rendered
+  unstyled.
+
+**What replaces it:** there is exactly one web application, so there is exactly one components
+folder. Every shared React component lives in `apps/web/src/components/`, and the design system of
+record is `apps/web/src/styles/globals.css`. The remaining shared packages (`contracts`,
+`api-client`, `config`) are unchanged.
+
 ## Consequences
 
 ### Positive
