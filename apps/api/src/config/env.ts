@@ -96,9 +96,6 @@ export const EnvSchema = z
 /** The validated environment. */
 export type Env = z.infer<typeof EnvSchema>;
 
-/** The injection token the validated environment is published under. */
-export const ENV = Symbol("CHLAT_ENV");
-
 /**
  * Thrown when the environment is missing or invalid.
  *
@@ -143,9 +140,4 @@ let cached: Env | undefined;
 export function getEnv(): Env {
   cached ??= validateEnv();
   return cached;
-}
-
-/** Reset the cache. Used by the test suite. */
-export function resetEnvCache(): void {
-  cached = undefined;
 }

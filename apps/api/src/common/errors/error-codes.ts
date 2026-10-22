@@ -6,11 +6,9 @@
  * never renamed — a new code is added instead.
  *
  * The canonical list lives in `@chlat/contracts` (`ERROR_CODES`). This module
- * re-exports it as a *typed registry* so the API can reference a code without
+ * mirrors it as a *typed registry* so the API can reference a code without
  * a string literal, and adds the API-internal codes the HTTP layer needs.
  */
-
-import { ERROR_CODES } from "@chlat/contracts";
 
 /**
  * The error codes the API itself produces.
@@ -208,15 +206,3 @@ export const ERROR_MESSAGE: Record<ErrorCode, string> = {
   SEC_REQUEST_TOO_LARGE: "The request body is too large.",
   SEC_UNSUPPORTED_MEDIA_TYPE: "The content type is not supported.",
 };
-
-/** The contract's own code list, re-exported so the two cannot drift silently. */
-export const CONTRACT_ERROR_CODES = ERROR_CODES;
-
-/**
- * A type guard: is the given string a known error code?
- *
- * @internal
- */
-export function isErrorCode(value: string): value is ErrorCode {
-  return Object.hasOwn(ERROR_STATUS, value);
-}
