@@ -1,5 +1,6 @@
 import { createDocument } from "zod-openapi";
 import type { ZodOpenApiPathItemObject } from "zod-openapi";
+import { API_PREFIX } from "./prefix.js";
 import { ROUTES, routeKey } from "./routes/index.js";
 
 /**
@@ -10,8 +11,10 @@ import { ROUTES, routeKey } from "./routes/index.js";
  * away from the implementation.
  */
 
-/** The prefix every route is mounted under. */
-export const API_PREFIX = "/api/v1";
+// The prefix lives in its own dependency-free module so the web app can
+// import it without pulling the OpenAPI generator into the browser bundle.
+// It is re-exported here because this is where a reader looks for it.
+export { API_PREFIX };
 
 /** The OpenAPI version this document declares. */
 export const OPENAPI_VERSION = "3.1.0";

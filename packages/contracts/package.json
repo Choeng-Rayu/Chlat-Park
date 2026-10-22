@@ -18,6 +18,11 @@
       "import": "./dist/permissions.js",
       "default": "./dist/permissions.js"
     },
+    "./prefix": {
+      "types": "./dist/prefix.d.ts",
+      "import": "./dist/prefix.js",
+      "default": "./dist/prefix.js"
+    },
     "./schemas": {
       "types": "./dist/schemas/index.d.ts",
       "import": "./dist/schemas/index.js",

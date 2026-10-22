@@ -1,5 +1,11 @@
 import { createApiClient, type ApiClient } from "@chlat/api-client";
 
+// The prefix comes from the contracts, so the web app and the server can
+// never disagree about where a route lives. It is imported from the
+// dependency-free `@chlat/contracts/prefix` module rather than the package
+// root, which would pull the OpenAPI generator into the browser bundle.
+import { API_PREFIX } from "@chlat/contracts/prefix";
+
 /**
  * The web app's API client.
  *
@@ -125,7 +131,7 @@ export function apiBaseUrl(): string {
  * @internal
  */
 export function apiUrl(path: string, query?: ApiFetchOptions["query"]): string {
-  const base = `${apiBaseUrl()}/api/v1${path.startsWith("/") ? path : `/${path}`}`;
+  const base = `${apiBaseUrl()}${API_PREFIX}${path.startsWith("/") ? path : `/${path}`}`;
 
   if (!query) {
     return base;

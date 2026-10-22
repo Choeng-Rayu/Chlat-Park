@@ -1,4 +1,4 @@
-import { API_PREFIX } from "@chlat/contracts";
+import { API_PREFIX } from "@chlat/contracts/prefix";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { apiBaseUrl, apiUrl } from "./client";

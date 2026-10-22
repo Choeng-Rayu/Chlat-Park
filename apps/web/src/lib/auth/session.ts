@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 
+import { API_PREFIX } from "@chlat/contracts/prefix";
+
 /**
  * The session helper.
  *
@@ -8,7 +10,7 @@ import { cookies } from "next/headers";
  * never has to be put in `localStorage`. A page that needs the actor reads it
  * on the server and passes it to the API in the `Authorization` header.
  *
- * The refresh token is scoped to `/api/v1/auth` so it is not attached to
+ * The refresh token is scoped to the auth routes so it is not attached to
  * every API call — see `specs/features/authentication/design.md`.
  */
 
@@ -72,7 +74,7 @@ export async function loadActor(fetchImpl: typeof fetch = fetch): Promise<Sessio
   }
 
   const response = await fetchImpl(
-    `${process.env["API_INTERNAL_URL"] ?? "http://localhost:3001"}/api/v1/auth/me`,
+    `${process.env["API_INTERNAL_URL"] ?? "http://localhost:3001"}${API_PREFIX}/auth/me`,
     {
       headers: { Authorization: `Bearer ${accessToken}` },
       cache: "no-store",
@@ -105,7 +107,7 @@ export async function signOutAction(): Promise<{ ok: boolean }> {
 
   try {
     await fetch(
-      `${process.env["API_INTERNAL_URL"] ?? "http://localhost:3001"}/api/v1/auth/logout`,
+      `${process.env["API_INTERNAL_URL"] ?? "http://localhost:3001"}${API_PREFIX}/auth/logout`,
       {
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}` },
